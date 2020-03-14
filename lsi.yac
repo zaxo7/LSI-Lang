@@ -1,0 +1,279 @@
+%{
+	#include "global.h"
+	#include "functions.h"
+
+
+	extern FILE* yyin;
+%}
+
+%token  FUNCTION PROCEDURE TABLE STRUCT VAR PROG
+
+%token CONST INT_CONST FLOAT_CONST LONG_CONST CHAR_CONST
+
+%token INT FLOAT LONG CHAR
+
+%token IF THEN ELSE WHILE FOR
+
+%token COLON COMMA BR
+%token LP //left parenthesis
+%token RP //right parenthesis
+%token LB //left braces
+%token RB //right braces
+%token LBR //left bracket
+%token RBR //right bracket
+
+%token AND OR NOT SUP INF EQUAL
+
+%token E S ES
+
+%token AFFECT PLUS MINUS DIV MULT POW MOD
+
+%token BEG END EOL 
+
+%token IDENT
+
+%right AFFECT EQUAL
+
+%left PLUS MINUS OR INF SUP
+
+%left DIV MULT MOD
+
+%left NOT NEG
+
+%right POW
+
+
+
+
+%start PROGRAM
+
+
+
+%%
+
+//la forme générale du progeamme
+
+PROGRAM:PROG DECLARATION_LIST BEG MAIN END
+;
+
+//la partie declaration ou en declare les constantes et les varibles les tableux ...
+DECLARATION_LIST:
+	DECLARATION 	{	$$.id = $1.id; 	}
+|	DECLARATION	DECLARATION_LIST	{	$$.id = $1.id; 	}
+;
+
+
+
+DECLARATION:
+	CONST_DECLARATION		{	$$.id = $1.id; 	}
+|	VAR_LIST_DECLARATION	{	$$.id = $1.id; 	}
+|	TAB_DECLARATION			{	$$.id = $1.id; 	}
+|	STRUCT_DECLARATION		{	$$.id = $1.id; 	}
+|	FUNCTION_DECLARATION
+|	PROCEDURE_DECLARATION
+;
+
+CONST_DECLARATION:	
+	CONST IDENT AFFECT VALUE EOL	{
+										set_val($2.id, $4.val, $4.type);
+										set_const($2.id);
+
+									}
+;
+
+
+//les valeurs que on peux rencontrer
+VALUE:
+	INT_CONST	{	$$ = $1;	}
+|	LONG_CONST	{	$$ = $1;	}
+|	FLOAT_CONST	{	$$ = $1;	}
+|	CHAR_CONST	{	$$ = $1;	}
+;
+
+//declaration d'une liste de variables
+VAR_LIST_DECLARATION:
+	VAR VARIABLES COLON TYPE EOL	{
+										auto_set_type($4.type);
+										$$.id = current_scope->id;
+									}
+;
+
+//liste des variables
+VARIABLES:
+	IDENT COMMA VARIABLES 	{	
+								set_val($1.id, NILL, TO_SET);	
+							}
+|	IDENT	{
+				set_val($1.id, NILL, TO_SET);
+			}
+;
+
+
+//les types 
+TYPE:
+	FLOAT	{	$$.type = F;	}
+|	INT		{	$$.type = I;	}
+|	LONG	{	$$.type = L;	}
+|	CHAR	{	$$.type = C;	}
+;
+
+//declaration d'un tableux
+TAB_DECLARATION:
+	TABLE IDENT LBR TABLE_DIMENSIONS RBR COLON TYPE EOL	{	
+															set_val($2.id, NILL, TAB);
+															build_table($2.id, (table*)$4.val, $7.type);
+															$$.id = current_scope->id;
+														}
+;
+
+//les démentions d'un tableau
+TABLE_DIMENSIONS:
+	INT_CONST	{	$$.val = init_table(*(int*)$1.val);	}
+|	INT_CONST COMMA TABLE_DIMENSIONS	{	
+											tab_push((table*)$3.val, *(int*)$1.val);
+											$$ = $3;
+										}
+;
+
+//declaration d'une structure
+STRUCT_DECLARATION:
+	STRUCT IDENT BEGIN_SCOPE DECLARATION_LIST END_SCOPE EOL	{	
+																void* scope_ptr = malloc(sizeof(int));
+																*((int*)scope_ptr) = $4.id;
+																set_val($2.id, scope_ptr, STR);
+																$$.id = current_scope->id;
+															}
+;
+
+BEGIN_SCOPE: 
+	LB 	{	
+			
+			current_scope = add_son(current_scope, scope_init());
+			printf("current_scope is %d\n", current_scope->id);
+		}
+;
+
+END_SCOPE:
+	RB 	{	
+				current_scope = scope_tree;
+		}
+;
+
+
+
+
+FUNCTION_DECLARATION:
+	FUNCTION IDENT LP ARGS_LIST RP COLON TYPE LB ACTIONS RB
+;
+
+ARGS_LIST:
+	TYPE IDENT MODE
+|	TYPE IDENT MODE COMMA ARGS_LIST
+;
+
+PROCEDURE_DECLARATION:
+	PROCEDURE IDENT LP ARGS_LIST RP LB ACTIONS RB
+;
+
+MODE:
+	E
+|	S
+|	ES
+;
+
+ACTIONS: 
+	EOL
+;
+
+MAIN: 
+	EOL
+;
+
+/*EXPRESSION:
+| EXPRESSION OP EXPRESSION	
+							{
+
+							}
+//| EXPRESSION RELOP EXPRESSION
+| NOT EXPRESSION
+| MINUS EXPRESSION %prec NEG
+| LP EXPRESSION RP
+;
+
+OP:
+|	PLUS	
+		{	
+			$$ = _plus;	
+		}
+|	MINUS
+		{	
+			$$ = _minus;	
+		}
+|	MULT
+		{	
+			$$ = _mult;	
+		}
+|	DIV
+		{	
+			$$ = _div;
+		}
+|	MOD
+		{	
+			$$ = _mod;
+		}
+|	POW
+		{
+			$$ = _pow;
+		}
+;
+
+RELOP:
+|	INF EQUAL
+	{
+		$$ = _inf_equal;
+	}
+|	SUP EQUAL
+	{
+		$$ = _sup_equal;
+	}
+|	INF
+	{
+		$$ = _inf;
+	}
+|	SUP
+	{
+		$$ = _sup;
+	}
+|	EQUAL
+	{
+		$$ = _equal;
+	}
+|	AND
+	{
+		$$ = _and;
+	}
+|	OR
+	{
+		$$ = _or;
+	}
+;*/
+
+
+%%
+
+
+int main(int argc, char **argv)
+{
+	if(argc != 2)
+		yyin = stdin;
+	else
+		yyin = fopen(argv[1], "r+");
+
+	init_all();
+
+	yyparse();
+
+	print_sym_tab();
+
+	print_tables();
+}

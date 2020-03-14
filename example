@@ -1,0 +1,19 @@
+Prog
+
+/* declaration des fonctions */
+
+const a = 4;
+var b,s,f,g:int;
+table[45]:int;
+function fct(int a E, long c ES, char s REF):int
+{
+	
+
+	return a;
+}
+
+
+
+begin
+
+end
