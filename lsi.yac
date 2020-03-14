@@ -155,7 +155,7 @@ BEGIN_SCOPE:
 
 END_SCOPE:
 	RB 	{	
-				current_scope = scope_tree;
+				current_scope = get_father(scope_tree, current_scope->id);
 		}
 ;
 

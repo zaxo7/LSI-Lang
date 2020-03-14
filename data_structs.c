@@ -15,7 +15,7 @@ scope* add_son(scope* root, scope* son)
 //la fonction qui retourne le scope pére
 scope* get_father(scope* root, int id)
 	{
-		printf("looking for the father of %d\n", id);
+		//printf("looking for the father of %d\n", id);
 		for (int i = 0; i < root->nbr_sons; ++i)
 		{
 			if(root->sons[i]->id == id)
@@ -34,7 +34,7 @@ scope* get_father(scope* root, int id)
 //la fonction qui initialise un scope et le donner un id unique
 scope* scope_init(void)
 {
-	printf("scope_init:creating a son %d\n", scope_unique_id);
+	//printf("scope_init:creating a son %d\n", scope_unique_id);
 	scope* son = malloc(sizeof(scope));
 	son->id = scope_unique_id++;
 	son->name = NULL;
@@ -63,18 +63,19 @@ int tab_push_scope(scope* root, scope* son)
 			new_tab = malloc(sizeof(scope*) * root->nbr_sons + 1);
 
 			if(!new_tab)
-				return 0;
+				yyerror("tab_push_scope:error with malloc");
 
 			memcpy((void*)new_tab, (void*)root->sons, root->nbr_sons);
 			
-			new_tab[root->nbr_sons++] = son;
 			
 			free(root->sons);
 			root->sons = new_tab;
 		}
 
+		new_tab[root->nbr_sons++] = son;
 	}
-		return 1;
+	//printf("added one son new nbr_sons=%d new son_ptr %p\n", root->nbr_sons, root->sons[root->nbr_sons-1]);
+	return 1;
 }
 //ajouter une entrée a la table de tailles pour un tableau
 int tab_push(table* tab, int size)
