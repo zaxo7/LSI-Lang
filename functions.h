@@ -3,6 +3,7 @@
 #include "global.h"
 #include "data_structs.h"
 
+
 int yyerror(char* );
 
 int declare(char* );

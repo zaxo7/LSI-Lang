@@ -8,7 +8,7 @@ Prog test
 	struct nn 	{
 					var x1,v:long;
 					const A = 2;
-					table B[1,3]:char;
+					table B[1]:char;
 					struct nnn 	{
 									var x1n,vn:long;
 								
@@ -27,7 +27,7 @@ struct second{
 
 	const a = 15L;
 
-	function fct(int z E, float n ES):long 
+	function fct(int z E, float n ES, char f S, long h ES):long 
 	{
 		;
 	}

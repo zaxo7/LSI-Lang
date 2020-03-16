@@ -8,8 +8,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+
+
 #define YYSTYPE value
-#define YYSTYPE_IS_DECLARED
 
 #define MAX_VAR 50
 
@@ -31,7 +32,7 @@ enum rel_op
 
 enum types
 {
-	I, F, L, C, ID, FUN, PRO, STR, TAB, TO_SET
+	I, F, L, C, ID, FUN, PRO, STR, TAB, TO_SET, E_, ES_, S_
 };
 
 typedef struct Val
@@ -66,6 +67,17 @@ typedef struct Tab
 	int type;
 	void* table;
 }table;
+
+typedef struct F
+{
+	int nbr_E;
+	int* E;
+	int nbr_S;
+	int* S;
+	int nbr_ES;
+	int* ES;
+	int ret_type;
+}function;
 
 scope *scope_tree, *current_scope;
 

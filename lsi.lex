@@ -57,11 +57,11 @@ Prog\ .*	{
 				}
 <DECLARATIONS>S {
 
-					return(E);
+					return(S);
 				}
 <DECLARATIONS>ES 	{
 
-						return(E);
+						return(ES);
 					}
 
 
@@ -73,19 +73,19 @@ Prog\ .*	{
 					}
 
 int 	{
-
+			yylval.type = I;
 			return(INT);
 		}
 float 	{
-			
+			yylval.type = F;
 			return(FLOAT);
 		}
 long 	{
-			
+			yylval.type = L;
 			return(LONG);
 		}
 char	{
-
+			yylval.type = C;
 			return(CHAR);
 		}
 var		{
@@ -224,7 +224,10 @@ OR		{
 			}
 
 \'.\'	{
-
+			yylval.type = C;
+			yylval.val = (int*)malloc(sizeof(char));
+			/* printf("\nlex:converting %s to char!\n", yytext); */
+			*((char*)yylval.val) = yytext[0];
 			return(CHAR_CONST);
 		}
 

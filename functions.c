@@ -1,5 +1,6 @@
 #include "functions.h"
 
+
 //la fonction pour gérer les erreurs
 int yyerror(char* s)
 {
@@ -38,7 +39,7 @@ void init_all()
 	scope_unique_id = 0;
 	variable_unique_id = 0;
 
-	scope_tree = scope_init();
+	scope_tree = init_scope();
 	scope_tree->name = strdup("global");
 
 	current_scope = scope_tree;
@@ -58,7 +59,7 @@ void init_all()
 int set_val(int id, void* val, int type)
 {
 	variable* variable = get_var(id);
-	printf("set_val: setting %s to %d\n", variable->name, type);
+	//printf("set_val: setting %s to %d\n", variable->name, type);
 
 	if(!variable)
 		yyerror("setting a variable that dosn't exists");
@@ -70,6 +71,29 @@ int set_val(int id, void* val, int type)
 			yyerror("malloc error");
 	}
 
+	if(val == NULL)
+	{
+		//en alloue pour chaque type sa propre taille
+		switch(type)
+		{
+			case I:
+				val = malloc(sizeof(int));
+				memset(val, 0, sizeof(int));
+				break;
+			case F:
+				val = malloc(sizeof(float));
+				memset(val, 0, sizeof(float));
+				break;
+			case L:
+				val = malloc(sizeof(long));
+				memset(val, 0, sizeof(long));
+				break;
+			case C:
+				val = malloc(sizeof(char));
+				memset(val, 0, sizeof(char));
+				break;
+		}
+	}
 
 	variable->var->type = type;
 
@@ -83,7 +107,7 @@ int set_val(int id, void* val, int type)
 int set_const(int id)
 {
 	variable* variable = get_var(id);
-	printf("set_val: setting %s to const\n", variable->name);
+	//printf("set_val: setting %s to const\n", variable->name);
 
 	if(!variable)
 		yyerror("setting a variable that dosn't exists");
@@ -100,7 +124,7 @@ int set_const(int id)
 int auto_set_type(int type)
 {
 	
-	printf("auto_set_type: %d\n", type);
+	//printf("auto_set_type: %d\n", type);
 	for (int i = 0; i < MAX_VAR; i++)
 	{
 		//si c'est un symbole sans valeur en continue
@@ -110,28 +134,8 @@ int auto_set_type(int type)
 		//en change le type pour tous les variables qui ont le type TO_SET
 		if(sym_tab[i].var->type == TO_SET)
 		{
-			void* val = NULL;
-			//en alloue pour chaque type sa propre taille
-			switch(type)
-			{
-				case I:
-					val = malloc(sizeof(int));
-					memset(val, 0, sizeof(int));
-					break;
-				case F:
-					val = malloc(sizeof(float));
-					memset(val, 0, sizeof(float));
-					break;
-				case L:
-					val = malloc(sizeof(long));
-					memset(val, 0, sizeof(long));
-					break;
-				case C:
-					val = malloc(sizeof(char));
-					memset(val, 0, sizeof(char));
-					break;
-			}
-			set_val(sym_tab[i].id, val, type);
+			
+			set_val(sym_tab[i].id, NULL, type);
 		}
 		
 	}

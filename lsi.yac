@@ -111,10 +111,10 @@ VARIABLES:
 
 //les types 
 TYPE:
-	FLOAT	{	$$.type = F;	}
-|	INT		{	$$.type = I;	}
-|	LONG	{	$$.type = L;	}
-|	CHAR	{	$$.type = C;	}
+	FLOAT	{	$$.type = $1.type;	}
+|	INT		{	$$.type = $1.type;	}
+|	LONG	{	$$.type = $1.type;	}
+|	CHAR	{	$$.type = $1.type;	}
 ;
 
 //declaration d'un tableux
@@ -129,9 +129,10 @@ TAB_DECLARATION:
 //les démentions d'un tableau
 TABLE_DIMENSIONS:
 	INT_CONST	{	$$.val = init_table(*(int*)$1.val);	}
-|	INT_CONST COMMA TABLE_DIMENSIONS	{	
-											tab_push((table*)$3.val, *(int*)$1.val);
-											$$ = $3;
+|	TABLE_DIMENSIONS COMMA INT_CONST 	{	
+											//tab_push((table*)$3.val, *(int*)$1.val);
+											((table*)$1.val)->table = tab_push(((table*)$1.val)->size, ((table*)$1.val)->dimensions++, $3.val, I);
+											$$ = $1;
 										}
 ;
 
@@ -148,14 +149,16 @@ STRUCT_DECLARATION:
 BEGIN_SCOPE: 
 	LB 	{	
 			
-			current_scope = add_son(current_scope, scope_init());
+			current_scope = add_son(current_scope, init_scope());
+			$$.id = current_scope->id;
 			printf("current_scope is %d\n", current_scope->id);
 		}
 ;
 
 END_SCOPE:
 	RB 	{	
-				current_scope = get_father(scope_tree, current_scope->id);
+			current_scope = get_father(scope_tree, current_scope->id);
+			printf("current_scope is %d\n", current_scope->id);
 		}
 ;
 
@@ -163,22 +166,36 @@ END_SCOPE:
 
 
 FUNCTION_DECLARATION:
-	FUNCTION IDENT LP ARGS_LIST RP COLON TYPE LB ACTIONS RB
+	FUNCTION IDENT LP ARGS_LIST RP COLON TYPE BEGIN_SCOPE ACTIONS END_SCOPE	{
+																				((function*)$4.val)->ret_type = $7.type;
+																
+																				set_val($2.id, $4.val, FUN);
+																			}	
 ;
 
 ARGS_LIST:
-	TYPE IDENT MODE
-|	TYPE IDENT MODE COMMA ARGS_LIST
+	TYPE IDENT MODE	{
+						set_val($2.id, NULL, $1.type);
+						$$.val = init_args($2.id, $3.type);
+					}
+|	ARGS_LIST COMMA TYPE IDENT MODE {
+										set_val($4.id, NULL, $3.type);
+										$1.val = add_arg((function*)$1.val, $4.id, $5.type);
+									}
 ;
 
 PROCEDURE_DECLARATION:
-	PROCEDURE IDENT LP ARGS_LIST RP LB ACTIONS RB
+	PROCEDURE IDENT LP ARGS_LIST RP BEGIN_SCOPE ACTIONS END_SCOPE 	{
+																		((function*)$4.val)->ret_type = -1;
+
+																		set_val($2.id, $4.val, PRO);
+																	}
 ;
 
 MODE:
-	E
-|	S
-|	ES
+	E 	{	$$.type = E_;	}
+|	S 	{	$$.type = S_;	}
+|	ES 	{	$$.type = ES_;	}
 ;
 
 ACTIONS: 
@@ -275,5 +292,9 @@ int main(int argc, char **argv)
 
 	print_sym_tab();
 
+	printf("%d", ((table*)get_var(26)->var)->dimensions);
+
 	print_tables();
+
+	print_functions();
 }
